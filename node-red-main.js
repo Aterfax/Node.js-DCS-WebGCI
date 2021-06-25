@@ -1,3 +1,5 @@
+/* global context, msg, node */
+
 // ++++++++++++++++++++++++++++++ SETUP START ++++++++++++++++++++++++++++++
 const host = 'pgaw.hoggitworld.com';
 const port = '42674';
@@ -58,15 +60,15 @@ function SendFullArray (ServerArray) {
   node.send(msg);
 }
 
-function ConvertAltitude (altitude_m) {
-  altitude_f = altitude_m * 3.2808;
-  altitude_f = parseFloat(altitude_f) / 1000;
-  altitude_f = altitude_f.toPrecision(3);
-  return altitude_f;
+function ConvertAltitude (altitudeM) {
+  let altitudeF = altitudeM * 3.2808;
+  altitudeF = parseFloat(altitudeF) / 1000;
+  altitudeF = altitudeF.toPrecision(3);
+  return altitudeF;
 }
 
 function Distance (startLat, startLng, destLat, destLng, unit) {
-  if ((startLat == destLat) && (startLng == destLng)) {
+  if ((startLat === destLat) && (startLng === destLng)) {
     return 0;
   } else {
     const radlat1 = Math.PI * startLat / 180;
@@ -80,31 +82,30 @@ function Distance (startLat, startLng, destLat, destLng, unit) {
     dist = Math.acos(dist);
     dist = dist * 180 / Math.PI;
     dist = dist * 60 * 1.1515;
-    if (unit == 'K') { dist = dist * 1.609344 }
-    if (unit == 'N') { dist = dist * 0.8684 }
+    if (unit === 'K') { dist = dist * 1.609344 }
+    if (unit === 'N') { dist = dist * 0.8684 }
     return dist;
   }
 }
 
 function VelocityCalc (fdist, starttime, endtime) {
-  delta = (starttime - endtime);
-  velocity = fdist / delta;
+  const delta = (starttime - endtime);
+  let velocity = fdist / delta;
   velocity = parseFloat(velocity);
   return velocity;
 }
 
 function SpeedCalc (name, lat, lon, starttime, plat, plon, endtime) {
-  fdist = Distance(plat, plon, lat, lon, 'N').toFixed(4);
+  let fdist = Distance(plat, plon, lat, lon, 'N').toFixed(4);
   fdist = parseFloat(fdist);
-  velocityc = VelocityCalc(fdist, starttime, endtime);
+  let velocityc = VelocityCalc(fdist, starttime, endtime);
   velocityc = 3600 * parseFloat(velocityc);
   velocityc = parseInt(velocityc.toPrecision(4));
   return velocityc;
 }
 
 function AddSpeed (msg) {
-  speed = SpeedCalc(name, lat, lon, LastSeen, Plat, Plon, PLastSeen);
-  return speed;
+  return SpeedCalc(name, lat, lon, LastSeen, Plat, Plon, PLastSeen);
 }
 
 // ++++++++++++++++++++++++++++++ GENERAL FUNCTIONS END ++++++++++++++++++++++++++++++
@@ -129,8 +130,8 @@ function ConvertTransform (payload) {
   const tokens = payload.split('|');
   msg.payload.LastSeen = Math.round((new Date()).getTime() / 1000);
   msg.payload.LatLongAlt = {};
-  for (i = 0; i < tokens.length; i++) {
-    if ((tokens[i] != null) && (tokens[i] != '') && (tokens.length == 5)) {
+  for (let i = 0; i < tokens.length; i++) {
+    if ((tokens[i] != null) && (tokens[i] !== '') && (tokens.length === 5)) {
       switch (i) {
         case 0: msg.payload.lon = parseFloat(tokens[i]) + reflong; break;
         case 1: msg.payload.lat = parseFloat(tokens[i]) + reflat; break;
@@ -138,8 +139,8 @@ function ConvertTransform (payload) {
         case 3: msg.payload.U = parseFloat(tokens[i]); break;
         case 4: msg.payload.V = parseFloat(tokens[i]); break;
       }
-    } else if ((tokens[i] != null) && (tokens[i] != '')) {
-	  switch (i) {
+    } else if ((tokens[i] != null) && (tokens[i] !== '')) {
+      switch (i) {
         case 0: msg.payload.lon = parseFloat(tokens[i]) + reflong; break;
         case 1: msg.payload.lat = parseFloat(tokens[i]) + reflat; break;
         case 2: msg.payload.alt = parseFloat(tokens[i]); break;
@@ -181,7 +182,7 @@ function RemoveNonTypeEntities (arr) {
 //
 // ++++++++++++++++++++++++++++++ ICON FUNCTIONS START ++++++++++++++++++++++++++++++
 function SetIconAir (subtype) {
-  icon = 'unknown';
+  let icon = 'unknown';
   switch (subtype) {
     case 'FixedWing': icon = 'plane'; break;
     case 'Rotorcraft': icon = 'helicopter'; break;
@@ -190,41 +191,35 @@ function SetIconAir (subtype) {
 }
 
 function SetIconGround (subtype) {
-  icon = 'fa-dot-circle-o fa-1';
-  return icon;
+  return 'fa-dot-circle-o fa-1';
 }
 
 function SetIconSea (subtype) {
-  icon = 'ship';
-  return icon;
+  return 'ship';
 }
 
 function SetIconWeapon (subtype) {
-  icon = 'unknown';
-  return icon;
+  return 'unknown';
 }
 
 function SetIconSensor (subtype) {
-  icon = 'unknown';
-  return icon;
+  return 'unknown';
 }
 
 function SetIconNavaid (subtype) {
-  icon = 'fa-bullseye';
-  return icon;
+  return 'fa-bullseye';
 }
 
 function SetIconMisc (subtype) {
-  icon = 'unknown';
-  return icon;
+  return 'unknown';
 }
 
 function SetIcon (Type) {
-  icon = 'unknown';
+  let icon = 'unknown';
   if (Type) {
     Type = Type.split('+');
-    maintype = Type[0];
-    subtype = Type[1];
+    const maintype = Type[0];
+    const subtype = Type[1];
     msg.payload.maintype = maintype;
     msg.payload.subtype = subtype;
     switch (maintype) {
@@ -246,10 +241,10 @@ function SetIcon (Type) {
 //
 // ++++++++++++++++++++++++++++++ LAYER FUNCTIONS START ++++++++++++++++++++++++++++++
 function SetLayer (Type) {
-  layer = 'NoLayer';
+  let layer = 'NoLayer';
   if (Type) {
     Type = Type.split('+');
-    maintype = Type[0];
+    const maintype = Type[0];
     switch (maintype) {
       case 'Air': layer = 'Aircraft'; break;
       case 'Ground': layer = 'Ground Vehicles'; break;
@@ -270,7 +265,7 @@ function SetLayer (Type) {
 //
 // ++++++++++++++++++++++++++++++ COALITION FUNCTIONS START ++++++++++++++++++++++++++++++
 function SetColors (Coalition) {
-  color = '';
+  let color = '';
   if (Coalition) {
     switch (Coalition) {
       case 'Allies': color = '#ff8080'; break;
@@ -288,17 +283,17 @@ function SetColors (Coalition) {
 //
 // ++++++++++++++++++++++++++++++ PLATFORM FUNCTIONS START ++++++++++++++++++++++++++++++
 function PlatformOverrides (Platform, OverrideType, Icon, Layer, Radius) {
-  value = '';
-  if (OverrideType == 'Icon') {
-		    switch (Platform) {
+  let value = '';
+  if (OverrideType === 'Icon') {
+    switch (Platform) {
       case 'FARP': value = 'wrench'; break;
       case 'Pilot': value = 'male'; break;
       case 'KC-135':
       case 'S-3B Tanker':
       case 'KC135MPRS': value = 'https://atwar.online/assets/images/icons/KC130-blue.png'; break;
     }
-  } else if (OverrideType == 'Layer') {
-		    switch (Platform) {
+  } else if (OverrideType === 'Layer') {
+    switch (Platform) {
       case 'FARP': value = 'Airports'; break;
       case 'Pilot': value = 'Parachutists'; break;
       case 'SA-18 Igla-S manpad': value = side + 'SAMs'; break;
@@ -322,8 +317,8 @@ function PlatformOverrides (Platform, OverrideType, Icon, Layer, Radius) {
       case 'Igla manpad INS': value = side + 'SAMs'; break;
       case 'Patriot ln': value = side + 'SAMs'; break;
     }
-  } else if (OverrideType == 'Radius') {
-		    switch (Platform) {
+  } else if (OverrideType === 'Radius') {
+    switch (Platform) {
       case 'SA-18 Igla-S manpad': value = 5185; break;
       case 'S-300PS 5P85D ln': value = 74080; break;
       case 'S-300PS 5P85C ln': value = 74080; break;
@@ -359,6 +354,7 @@ function addOldTimestamp (msg) {
 }
 
 function findOldTimestamp (sname, LastSeen) {
+  let timestamp;
   if (unifiedold.find(x => x.name === sname) === undefined) {
     timestamp = LastSeen;
   } else {
@@ -368,6 +364,7 @@ function findOldTimestamp (sname, LastSeen) {
 }
 
 function findOldLat (sname, lat) {
+  let oldlat;
   if (unifiedold.find(x => x.name === sname) === undefined) {
     oldlat = lat;
   } else {
@@ -377,6 +374,7 @@ function findOldLat (sname, lat) {
 }
 
 function findOldLon (sname, lon) {
+  let oldlon;
   if (unifiedold.find(x => x.name === sname) === undefined) {
     oldlon = lon;
   } else {
@@ -386,11 +384,11 @@ function findOldLon (sname, lon) {
 }
 
 function findOldAlt (sname, altitude) {
+  let oldalt;
   if (unifiedold.find(x => x.name === sname) === undefined) {
     oldalt = altitude;
   } else {
-    alt = unifiedold.find(x => x.name === sname).altitude;
-    oldalt = alt;
+    oldalt = unifiedold.find(x => x.name === sname).altitude;
   }
   return oldalt;
 }
@@ -432,8 +430,8 @@ newLine._flush = function (callback) {
 // ++++++++++++++++++++++++++++++ MAIN THREAD START ++++++++++++++++++++++++++++++
 
 // Get the reference values to correct the offset for co-ordinates
-reflat = 0;
-reflong = 0;
+let reflat = 0;
+let reflong = 0;
 
 // SetGlobal to send full array on start up
 global.set('sendglobal', true);
@@ -443,12 +441,12 @@ const net = context.global.get('net');
 // var net = require('net')  //NodeRed is not native node or javascript
 
 // Setup connection
-connection = new net.Socket();
+const connection = new net.Socket();
 let serverupdate;
 
 // Define the server array
-ServerArray = [];
-ServerArrayDiff = [];
+let ServerArray = [];
+let ServerArrayDiff = [];
 
 connection.connect(port, host, function () {
   connection.write(connectionstring);
@@ -456,31 +454,31 @@ connection.connect(port, host, function () {
 });
 
 // Setup buffer parsing fuckery
-parsed = connection.pipe(newLine);
+const parsed = connection.pipe(newLine);
 
 parsed.on('data', function (data) {
   msg.payload = {};
   // Begin parsing of raw incoming messages
-  values = BufferToString(data);
+  let values = BufferToString(data);
 
-  if (/^\#.*/.test(values) || /^FileType/.test(values)) {
+  if (/^#.*/.test(values) || /^FileType/.test(values)) {
     return;
   }
 
   if (/^0,.*/.test(values)) {
     // node.log(values);
-	    if (/^0,ReferenceLatitude/.test(values)) {
-		    reflat = parseInt(values.match(/^0,ReferenceLatitude=(\d+)$/m)[1]);
-	    }
-	    if (/^0,ReferenceLongitude/.test(values)) {
-		    reflong = parseInt(values.match(/^0,ReferenceLongitude=(\d+)$/m)[1]);
-	    }
+    if (/^0,ReferenceLatitude/.test(values)) {
+      reflat = parseInt(values.match(/^0,ReferenceLatitude=(\d+)$/m)[1]);
+    }
+    if (/^0,ReferenceLongitude/.test(values)) {
+      reflong = parseInt(values.match(/^0,ReferenceLongitude=(\d+)$/m)[1]);
+    }
     return;
   }
 
   values = values.trim().split(','); // trim off the crlf first then split into parts
 
-  if (/^\-.*/.test(values[0])) {
+  if (/^-.*/.test(values[0])) {
     msg.payload.name = GetServerName(servername) + values[0].substring(1);
     msg.payload.deleted = true;
     // node.log("Item deleted.");
@@ -490,8 +488,8 @@ parsed.on('data', function (data) {
   }
   // Set the name of the object and the server name if defined from the Tacview ID
   node.log(values[1]);
-  if (values[1]) { ConvertTransform(values[1]) }				// Convert transform to actual discrete vars.
-  values.slice(2, values.length).forEach(ConvertArguments); 	// Convert further arguments to discrete vars.
+  if (values[1]) { ConvertTransform(values[1]) } // Convert transform to actual discrete vars.
+  values.slice(2, values.length).forEach(ConvertArguments); // Convert further arguments to discrete vars.
 
   // Convert altitude
   if (msg.payload.alt) {
@@ -510,8 +508,8 @@ parsed.on('data', function (data) {
     msg.payload.lineColor = SetColors(msg.payload.Coalition);
     msg.payload.fillColor = SetColors(msg.payload.Coalition);
     msg.payload.fillOpacity = 0.01; // Only want this set once.
-    if (msg.payload.Coalition == 'Allies') { msg.payload.side = 'East' } 	// This is set for Platform overrides.
-    if (msg.payload.Coalition == 'Enemies') { msg.payload.side = 'West' }	// This is set also for Platform overrides.
+    if (msg.payload.Coalition === 'Allies') { msg.payload.side = 'East' } // This is set for Platform overrides.
+    if (msg.payload.Coalition === 'Enemies') { msg.payload.side = 'West' } // This is set also for Platform overrides.
   }
 
   // Begin any required Platform Overrides

@@ -11,6 +11,7 @@
     "ecmaVersion": 12
   },
   "rules": {
-      "semi": ["error", "always", { "omitLastInOneLineBlock": true }]
+      "semi": ["error", "always", { "omitLastInOneLineBlock": true }],
+      "no-unused-vars": "off"
   }
 }
