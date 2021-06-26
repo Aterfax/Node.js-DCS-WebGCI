@@ -110,6 +110,15 @@ function AddSpeed (msg) {
   return msg;
 }
 
+function ConvertDDToDMS (D, lng) {
+  const dir = D < 0 ? lng ? 'W' : 'S' : lng ? 'E' : 'N';
+  const deg = D | 0; // truncate dd to get degrees
+  const frac = Math.abs(D - deg); // get fractional part
+  const min = (frac * 60) | 0; // multiply fraction by 60 and truncate
+  const sec = frac * 3600 - min * 60;
+  return dir + ' ' + deg + ' M ' + min + ' S ' + sec.toPrecision(4);
+}
+
 // ++++++++++++++++++++++++++++++ GENERAL FUNCTIONS END ++++++++++++++++++++++++++++++
 //
 //
