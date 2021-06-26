@@ -531,6 +531,9 @@ parsed.on('data', function (data) {
   // msg.payload = msg.payload(addOldTimestamp);
   // msg.payload = msg.payload.map(AddSpeed);
 
+  // Convert Lat and Long Unit type and add D M S
+  // msg.payload = msg.payload.map(({ lat, lon, ...rest }) => ({ dlat: ConvertDDToDMS(lat,0), dlon: ConvertDDToDMS(lon,1), lat, lon, ...rest }));
+
   delete msg.payload.LatLongAlt;
 
   PushToArray(ServerArrayDiff, msg.payload);
