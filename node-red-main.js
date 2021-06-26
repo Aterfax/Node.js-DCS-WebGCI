@@ -105,7 +105,9 @@ function SpeedCalc (name, lat, lon, starttime, plat, plon, endtime) {
 }
 
 function AddSpeed (msg) {
-  return SpeedCalc(name, lat, lon, LastSeen, Plat, Plon, PLastSeen);
+  const { name, lat, lon, LastSeen, PLastSeen, Plat, Plon, tooltip } = msg;
+  msg = { ...msg, name: name, lat: lat, lon: lon, tooltip: tooltip + '<br> Speed: ' + SpeedCalc(name, lat, lon, LastSeen, Plat, Plon, PLastSeen) };
+  return msg;
 }
 
 // ++++++++++++++++++++++++++++++ GENERAL FUNCTIONS END ++++++++++++++++++++++++++++++
@@ -282,7 +284,7 @@ function SetColors (Coalition) {
 //
 //
 // ++++++++++++++++++++++++++++++ PLATFORM FUNCTIONS START ++++++++++++++++++++++++++++++
-function PlatformOverrides (Platform, OverrideType, Icon, Layer, Radius) {
+function PlatformOverrides (Platform, OverrideType, Icon, Layer, Radius, Side) {
   let value = '';
   if (OverrideType === 'Icon') {
     switch (Platform) {
@@ -296,26 +298,26 @@ function PlatformOverrides (Platform, OverrideType, Icon, Layer, Radius) {
     switch (Platform) {
       case 'FARP': value = 'Airports'; break;
       case 'Pilot': value = 'Parachutists'; break;
-      case 'SA-18 Igla-S manpad': value = side + 'SAMs'; break;
-      case 'S-300PS 5P85D ln': value = side + 'SAMs'; break;
-      case 'S-300PS 5P85C ln': value = side + 'SAMs'; break;
-      case 'ZSU-23-4 Shilka': value = side + 'SAMs'; break;
-      case 'rapier_fsa_launcher':; value = side + 'SAMs'; break;
-      case 'Hawk ln': value = side + 'SAMs'; break;
-      case 'Kub 2P25 ln': value = side + 'SAMs'; break;
-      case 'S_75M_Volhov': value = side + 'SAMs'; break;
-      case 'Tor 9A331': value = side + 'SAMs'; break;
-      case 'Strela-10M3': value = side + 'SAMs'; break;
-      case '2S6 Tunguska': value = side + 'SAMs'; break;
-      case 'SA-11 Buk CC 9S470M1': value = side + 'SAMs'; break;
-      case 'M48 Chaparral': value = side + 'SAMs'; break;
-      case 'M1097 Avenger': value = side + 'SAMs'; break;
-      case 'Osa 9A33 ln': value = side + 'SAMs'; break;
-      case '5p73 s-125 ln': value = side + 'SAMs'; break;
-      case 'Strela-1 9P31': value = side + 'SAMs'; break;
-      case 'SA-18 Igla manpad': value = side + 'SAMs'; break;
-      case 'Igla manpad INS': value = side + 'SAMs'; break;
-      case 'Patriot ln': value = side + 'SAMs'; break;
+      case 'SA-18 Igla-S manpad': value = Side + 'SAMs'; break;
+      case 'S-300PS 5P85D ln': value = Side + 'SAMs'; break;
+      case 'S-300PS 5P85C ln': value = Side + 'SAMs'; break;
+      case 'ZSU-23-4 Shilka': value = Side + 'SAMs'; break;
+      case 'rapier_fsa_launcher':; value = Side + 'SAMs'; break;
+      case 'Hawk ln': value = Side + 'SAMs'; break;
+      case 'Kub 2P25 ln': value = Side + 'SAMs'; break;
+      case 'S_75M_Volhov': value = Side + 'SAMs'; break;
+      case 'Tor 9A331': value = Side + 'SAMs'; break;
+      case 'Strela-10M3': value = Side + 'SAMs'; break;
+      case '2S6 Tunguska': value = Side + 'SAMs'; break;
+      case 'SA-11 Buk CC 9S470M1': value = Side + 'SAMs'; break;
+      case 'M48 Chaparral': value = Side + 'SAMs'; break;
+      case 'M1097 Avenger': value = Side + 'SAMs'; break;
+      case 'Osa 9A33 ln': value = Side + 'SAMs'; break;
+      case '5p73 s-125 ln': value = Side + 'SAMs'; break;
+      case 'Strela-1 9P31': value = Side + 'SAMs'; break;
+      case 'SA-18 Igla manpad': value = Side + 'SAMs'; break;
+      case 'Igla manpad INS': value = Side + 'SAMs'; break;
+      case 'Patriot ln': value = Side + 'SAMs'; break;
     }
   } else if (OverrideType === 'Radius') {
     switch (Platform) {
@@ -355,40 +357,40 @@ function addOldTimestamp (msg) {
 
 function findOldTimestamp (sname, LastSeen) {
   let timestamp;
-  if (unifiedold.find(x => x.name === sname) === undefined) {
+  if (ServerArray.find(x => x.name === sname) === undefined) {
     timestamp = LastSeen;
   } else {
-    timestamp = unifiedold.find(x => x.name === sname).LastSeen;
+    timestamp = ServerArray.find(x => x.name === sname).LastSeen;
   }
   return timestamp;
 }
 
 function findOldLat (sname, lat) {
   let oldlat;
-  if (unifiedold.find(x => x.name === sname) === undefined) {
+  if (ServerArray.find(x => x.name === sname) === undefined) {
     oldlat = lat;
   } else {
-    oldlat = unifiedold.find(x => x.name === sname).lat;
+    oldlat = ServerArray.find(x => x.name === sname).lat;
   }
   return oldlat;
 }
 
 function findOldLon (sname, lon) {
   let oldlon;
-  if (unifiedold.find(x => x.name === sname) === undefined) {
+  if (ServerArray.find(x => x.name === sname) === undefined) {
     oldlon = lon;
   } else {
-    oldlon = unifiedold.find(x => x.name === sname).lon;
+    oldlon = ServerArray.find(x => x.name === sname).lon;
   }
   return oldlon;
 }
 
 function findOldAlt (sname, altitude) {
   let oldalt;
-  if (unifiedold.find(x => x.name === sname) === undefined) {
+  if (ServerArray.find(x => x.name === sname) === undefined) {
     oldalt = altitude;
   } else {
-    oldalt = unifiedold.find(x => x.name === sname).altitude;
+    oldalt = ServerArray.find(x => x.name === sname).altitude;
   }
   return oldalt;
 }
@@ -515,6 +517,10 @@ parsed.on('data', function (data) {
   // Begin any required Platform Overrides
   // if (msg.payload.Platform){
   // }
+
+  // Add the speed if desired.
+  // msg.payload = msg.payload(addOldTimestamp);
+  // msg.payload = msg.payload.map(AddSpeed);
 
   delete msg.payload.LatLongAlt;
 
