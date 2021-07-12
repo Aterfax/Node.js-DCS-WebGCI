@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Node-RED 3D Map all the Things</title>
+    <meta charset='utf-8' />
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no'/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+    <script src="leaflet/sockjs.min.js"></script>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.82/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.82/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+
+
+</head>
+<body>
+  <div id="cesiumContainer"></div>
+
+   <script>
+
+ServerArray=[];
+
+
+function PushToArray (arr, obj) {
+  const index = arr.findIndex((e) => e.name === obj.name);
+    if (index === -1) {
+      arr.push(obj);
+  } else {
+    Object.assign(arr[index], obj);
+  }
+  return arr;
+}
+
+function getColor(colorName, alpha) {
+  var color = Cesium.Color[colorName.toUpperCase()];
+  return Cesium.Color.fromAlpha(color, parseFloat(alpha));
+}
+
+function getColorBlendMode(colorBlendMode) {
+  return Cesium.ColorBlendMode[colorBlendMode.toUpperCase()];
+}
+
+
+   // Grant CesiumJS access to your ion assets
+   Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwYWZlYjYwZC0yN2IyLTRiZmMtYWE3Yy0zNDZhMDYwNDBkOWMiLCJpZCI6NDU5NTAsImlhdCI6MTYxNTYzMTI4N30.M7mKzFBr1UaANvIW7DXevvPXKAe75kWNPDpwSevfqdU";
+   const viewer = new Cesium.Viewer('cesiumContainer', { terrainProvider: Cesium.createWorldTerrain() });
+
+   function ClearCollection(binary){
+       ServerArray=[];
+       viewer.entities.removeAll();
+       return binary;
+   }
+
+
+   viewer.camera.flyTo({
+
+     destination : Cesium.Cartesian3.fromDegrees(54.552004, 24.148779, 5500),
+
+     orientation : {
+
+       heading : Cesium.Math.toRadians(0.0),
+
+       pitch : Cesium.Math.toRadians(-32.5),
+
+     }
+
+   });
+
+   var promise = Cesium.IonResource.fromAssetId(361281)
+     .then(function (resource) {
+
+    // ---- Connect to the Node-RED Events Websocket --------------------
+
+    var connect = function() {
+        ws = new SockJS(location.pathname.split("index")[0] + 'socket');
+        ws.onopen = function() {
+            console.log("CONNECTED");
+            // if (!inIframe) {
+            //     document.getElementById("foot").innerHTML = "<font color='#494'>"+ibmfoot+"</font>";
+            // }
+            ws.send(JSON.stringify({action:"connected"}));
+            //clearup = setInterval(() => {ClearCollection(1)}, 20000);
+                   // setInterval(() => { GetArray(ServerArray, ServerArrayDiff, global.get('sendglobal'), timer) }, delay);
+        };
+
+        ws.onclose = function() {
+            console.log("DISCONNECTED");
+            // if (!inIframe) {
+            //     document.getElementById("foot").innerHTML = "<font color='#900'>"+ibmfoot+"</font>";
+            // }
+            setTimeout(function() { connect(); }, 2500);
+        };
+
+        ws.onmessage = function(e) {
+            viewer.entities.suspendEvents;
+            var data = JSON.parse(e.data);
+            for (var i = 0; i < data.length; i++) {
+              PushToArray(ServerArray, data[i]);
+            }
+            for (var i = 0; i < ServerArray.length; i++) {
+              //console.log(data[i]);
+              if(ServerArray[i].deleted){
+                viewer.entities.removeById(ServerArray[i].name)
+                continue;
+              }
+              if (viewer.entities.getById(ServerArray[i].name) == undefined) {
+                var position = Cesium.Cartesian3.fromDegrees(ServerArray[i].lon,ServerArray[i].lat,ServerArray[i].height);
+                //console.log(position);
+                var heading = Cesium.Math.toRadians(ServerArray[i].hdg - 90 || 0);
+                var pitch = Cesium.Math.toRadians(ServerArray[i].pitch || 0) // ServerArray[i].pitch ||
+                var roll = Cesium.Math.toRadians((360 + ServerArray[i].roll) % 360) || 0;
+                var hpr = new Cesium.HeadingPitchRoll(heading, pitch, roll);
+                var orientation = Cesium.Transforms.headingPitchRollQuaternion(position,hpr);
+                color = 'YELLOW';
+                if (ServerArray[i].Coalition){
+                  // console.log(ServerArray[i].Coalition)
+                  switch (ServerArray[i].Coalition) {
+                    case 'Allies': color = 'RED'; break;
+                    case 'Enemies': color = 'BLUE'; break;
+                    case 'Neutrals': color = 'GREEN'; break;
+                    case 'Unknown': color = 'YELLOW'; break;
+                    }
+                  } else {
+                    color = 'YELLOW';
+                  }
+
+                var entity = viewer.entities.add({
+                    id: ServerArray[i].name,
+                    position: position,
+                    orientation: orientation,
+                    model: {
+                      uri: resource,
+                      minimumPixelSize: 128,
+                      maximumScale: 20000,
+                      color:  getColor(color || 'BLACK',1),
+                      colorBlendMode: getColorBlendMode("Highlight"),
+                      colorBlendAmount: 0.3,
+                      silhouetteColor: getColor('BLACK',0.7),
+                      silhouetteAlpha: 1.0,
+                      silhouetteSize: 2.0,
+                    }
+                });
+                console.log(ServerArray[i]);
+
+              } else {
+                object = viewer.entities.getById(ServerArray[i].name);
+                var position = Cesium.Cartesian3.fromDegrees(ServerArray[i].lon,ServerArray[i].lat,ServerArray[i].height);
+                //console.log(position);
+                var heading = Cesium.Math.toRadians(ServerArray[i].hdg - 90 || 0);
+                var pitch = Cesium.Math.toRadians(ServerArray[i].pitch || 0) //
+                var roll = Cesium.Math.toRadians((360 + ServerArray[i].roll) % 360) || 0;
+                var hpr = new Cesium.HeadingPitchRoll(heading, pitch, roll);
+                var orientation = Cesium.Transforms.headingPitchRollQuaternion(position,hpr);
+                //console.log(orientation);
+                object.position = position;
+                object.orientation = orientation;
+              }
+            };
+            viewer.entities.resumeEvents;
+        };
+    }
+
+    console.log("CONNECT TO",location.pathname + 'socket');
+    connect();
+
+    document.addEventListener ("keydown", function (ev) {
+        if (ev.ctrlKey  &&  ev.altKey  &&  ev.code === "Digit3") {
+            ws.close();
+            //window.onbeforeunload = null;
+            window.location.href = "index.html";
+        }
+    });
+
+  })
+  .otherwise(function (error) {
+    console.log(error);
+  });
+</script>
+</body>
+</html>
