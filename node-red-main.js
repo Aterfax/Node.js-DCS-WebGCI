@@ -472,7 +472,8 @@ parsed.on('data', function (data) {
   // Begin parsing of raw incoming messages
   let values = BufferToString(data);
 
-  if (/^#.*/.test(values) || /^FileType/.test(values)) {
+  //Strip out #TIMESTAMPS FILE indicators and anything starting with capitals or backslashes.
+  if (/^#.*/.test(values) || /^File/.test(values) || /^[A-Z\\]/.test(values) ) {
     return;
   }
 
