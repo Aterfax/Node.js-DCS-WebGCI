@@ -15,29 +15,28 @@ module.exports = {
         item.original = payload;
         const tokens = payload.split('|');
         item.LastSeen = Math.round((new Date()).getTime() / 1000);
-        item.LatLongAlt = {};
-            for (let i = 0; i < tokens.length; i++) {
-                if ((tokens[i] != null) && (tokens[i] !== '') && (tokens.length === 5)) {
-                    switch (i) {
-                        case 0: item.lon = parseFloat(tokens[i]) + reflong; break;
-                        case 1: item.lat = parseFloat(tokens[i]) + reflat; break;
-                        case 2: item.alt = parseFloat(tokens[i]); break;
-                        case 3: item.U = parseFloat(tokens[i]); break;
-                        case 4: item.V = parseFloat(tokens[i]); break;
-                    }
-                } else if ((tokens[i] != null) && (tokens[i] !== '')) {
-                    switch (i) {
-                        case 0: item.lon = parseFloat(tokens[i]) + reflong; break;
-                        case 1: item.lat = parseFloat(tokens[i]) + reflat; break;
-                        case 2: item.alt = parseFloat(tokens[i]); break;
-                        case 3: item.roll = parseFloat(tokens[i]); break;
-                        case 4: item.pitch = parseFloat(tokens[i]); break;
-                        case 5: item.yaw = parseFloat(tokens[i]); break;
-                        case 6: item.U = parseFloat(tokens[i]); break;
-                        case 7: item.V = parseFloat(tokens[i]); break;
-                        case 8: item.bearing = parseFloat(tokens[i]); break;
-                    }
+        for (let i = 0; i < tokens.length; i++) {
+            if ((tokens[i] != null) && (tokens[i] !== '') && (tokens.length === 5)) {
+                switch (i) {
+                    case 0: item.lon = parseFloat(tokens[i]) + reflong; break;
+                    case 1: item.lat = parseFloat(tokens[i]) + reflat; break;
+                    case 2: item.alt = parseFloat(tokens[i]); break;
+                    case 3: item.U = parseFloat(tokens[i]); break;
+                    case 4: item.V = parseFloat(tokens[i]); break;
+                }
+            } else if ((tokens[i] != null) && (tokens[i] !== '')) {
+                switch (i) {
+                    case 0: item.lon = parseFloat(tokens[i]) + reflong; break;
+                    case 1: item.lat = parseFloat(tokens[i]) + reflat; break;
+                    case 2: item.alt = parseFloat(tokens[i]); break;
+                    case 3: item.roll = parseFloat(tokens[i]); break;
+                    case 4: item.pitch = parseFloat(tokens[i]); break;
+                    case 5: item.yaw = parseFloat(tokens[i]); break;
+                    case 6: item.U = parseFloat(tokens[i]); break;
+                    case 7: item.V = parseFloat(tokens[i]); break;
+                    case 8: item.bearing = parseFloat(tokens[i]); break;
                 }
             }
+        }
     }
 };
