@@ -436,8 +436,10 @@ connection.connect(port, host, function () {
   serverupdate = setInterval(() => { GetArray(ServerArray, ServerArrayDiff, sendglobal, timer) }, delay);
   
   http.createServer(function (request, response) {
-  response.writeHead(200, {'Content-Type': 'application/json'});
-  response.end(JSON.stringify(ServerArray));
+  if (request.url == "/json") {
+    response.writeHead(200, {'Content-Type': 'application/json'});
+    response.end(JSON.stringify(ServerArray));
+  }
     }).listen(8081);
 
 // Console will print the message
