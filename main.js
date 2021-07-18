@@ -1,5 +1,7 @@
 // ++++++++++++++++++++++++++++++ IMPORT MODULES START ++++++++++++++++++++++++++++++
-var http = require("http");
+var http = require('http');
+var sockjs = require('sockjs');
+var node_static = require('node-static');
 var net = require('net');
 // ++++++++++++++++++++++++++++++ IMPORT MODULES END ++++++++++++++++++++++++++++++++
 //
@@ -62,20 +64,45 @@ let ServerArrayDiff = [];
 // SetGlobal to send full array on start up
 sendglobal=true;
 
+var setOnce = false;
 // Start connecting
 connection.connect(port, host, function () {
   connection.write(connectionstring);
-  serverupdate = setInterval(() => { general_functions.GetArray(ServerArray, ServerArrayDiff, sendglobal, timer, delay, ServerArray) }, delay);
-  // Make the webserver
-  http.createServer(function (request, response) {
-  if (request.url == "/json") {
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify(ServerArray));
-  }
-    }).listen(webserverport);
+
+  var sockjs_echo = sockjs.createServer();
+  sockjs_echo.on('connection', function(conn) {
+      console.log('connection start' + ",source " + conn.remoteAddress + ":" + conn.remotePort + ",URL " + conn.url);
+      if (!setOnce) {
+      serverupdate = setInterval(() => { general_functions.GetArray(ServerArray, ServerArrayDiff, sendglobal, timer, delay, conn) }, delay);
+      }
+      conn.on('data', function(message) {
+          //conn.write(message);
+          //conn.write(message);
+          });
+
+      conn.on('close', function() {
+        console.log('close ' + conn.remoteAddress + ":" + conn.remotePort );
+      });
+  });
+
+  var static_directory = new node_static.Server(__dirname);
+
+  var server = http.createServer();
+  server.addListener('request', function(req, res) {
+      static_directory.serve(req, res);
+  });
+  server.addListener('upgrade', function(req,res){
+      res.end();
+  });
+
+  sockjs_echo.installHandlers(server, {prefix:'/echo'});
+
+  console.log(' [*] Listening on 0.0.0.0:' + webserverport );
+  server.listen(webserverport, '0.0.0.0');
+
 
 // Console will print the message
-console.log('Server running at http://127.0.0.1:'+ webserverport +'/');
+console.log('Server running.');
 });
 
 // Setup buffer parsing fuckery
@@ -132,6 +159,12 @@ parsed.on('data', function (data) {
   // Convert altitude
   if (item.alt) {
     item.alt = general_functions.ConvertAltitude(item.alt);
+    item.height = item.alt;
+  }
+
+  // Fix Bearing
+  if (item.bearing){
+    item.hdg = item.bearing;
   }
 
   // Set icons and layer values
@@ -160,6 +193,11 @@ parsed.on('data', function (data) {
 
   // Convert Lat and Long Unit type and add D M S
   //item = item.map(({ lat, lon, ...rest }) => ({ dlat: general_functions.ConvertDDToDMS(lat,0), dlon: general_functions.ConvertDDToDMS(lon,1), lat, lon, ...rest }));
+if (item.Type){
+  if (item.Type.includes("Parachutist")){
+    return;
+  }
+}
   array_parsing_functions.PushToArray(ServerArrayDiff, item);
 });
 // ++++++++++++++++++++++++++++++ MAIN THREAD END ++++++++++++++++++++++++++++++
