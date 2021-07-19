@@ -5,7 +5,9 @@
     "port": 42674,
     "servername": "pgaw",
     "serverarray": [],
-    "serverarraydiff": []
+    "serverarraydiff": [],
+    "reflat": 0,
+    "reflong": 0
 },
 {
     "id": 1,
@@ -13,7 +15,9 @@
     "port": 42674,
     "servername": "gaw",
     "serverarray": [],
-    "serverarraydiff": []
+    "serverarraydiff": [],
+    "reflat": 0,
+    "reflong": 0
 },
 {
     "id": 2,
@@ -21,6 +25,8 @@
     "port": 42674,
     "servername": "saw",
     "serverarray": [],
-    "serverarraydiff": []
+    "serverarraydiff": [],
+    "reflat": 0,
+    "reflong": 0
 }
 ]

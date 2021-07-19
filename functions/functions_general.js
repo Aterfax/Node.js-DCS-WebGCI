@@ -11,7 +11,7 @@ module.exports = {
     GetServerName: function (servername) {
         return servername || 'UNSET-SERVER-PLEASE-SET-SERVERNAME';
     },
-    GetArray: function (Original, Diff, sendglobal, timer, delay, conn, servername) {
+    GetArray: function (serverarray, serverarraydiff, sendglobal, timer, delay, conn, servername) {
         if (timer > 5000) {
             // node.log(timer);
             timer = 0;
@@ -21,16 +21,16 @@ module.exports = {
         
         //const msg = {};
         // First update the main array
-        Diff.forEach(obj => array_parsing_functions.PushToArray(Original, obj));
+        serverarraydiff.forEach(obj => array_parsing_functions.PushToArray(serverarray, obj));
         
         // Check for whether we want to send a full update or just the diff.
         if (sendglobal) {
-            item = Original;
+            array = serverarray;
         } else {
-            item = Diff;
+            array = serverarraydiff;
         }
-        console.log("Server:" + servername + " timestep happened. - Object count: " + item.length);
-        message = JSON.stringify(item);
+        console.log("Server:" + servername + " timestep happened. - Object count: " + array.length);
+        message = JSON.stringify(serverarray);
         //console.log(message);
         conn.write(message);
 
@@ -38,8 +38,9 @@ module.exports = {
         //sendglobal=false;
         
         // Delete the objects with the property deleted
-        Original = Original.filter(el => !el.deleted);
-        Diff = [];
+        serverarray = serverarray.filter(el => !el.deleted);
+        serverarraydiff = [];
+
     },
     ConvertAltitude: function (altitudeM) {
         let altitudeF = altitudeM * 3.2808;

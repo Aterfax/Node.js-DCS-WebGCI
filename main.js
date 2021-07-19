@@ -6,7 +6,7 @@ var net = require('net');
 // ++++++++++++++++++++++++++++++ IMPORT MODULES END ++++++++++++++++++++++++++++++++
 //
 // ++++++++++++++++++++++++++++++ SETUP START ++++++++++++++++++++++++++++++
-const connectionstring = 'XtraLib.Stream.0\nTacview.RealTimeTelemetry.0\nnodered_webgci\n0\0';
+const connectionstring = 'XtraLib.Stream.0\nTacview.RealTimeTelemetry.0\nnodejs_webgci\n0\0';
 const delay = 1000; // delay in milliseconds
 let timer = 0; // Start at zero
 const webserverport = '8081';
@@ -25,30 +25,6 @@ var platform_functions = require('./functions/functions_platforms.js');
 var old_data_functions = require('./functions/functions_old_data.js');
 // ++++++++++++++++++++++++++++++++ IMPORT FUNCTIONS END ++++++++++++++++++++++++++++++
 //
-// ++++++++++++++++++++++++++++++ BUFFER PARSING START ++++++++++++++++++++++++++++++
-const { Transform } = require('stream');
-//const { Transform } = context.global.get('stream'); // NodeRed is not native node or javascript
-const newLine = new Transform();
-
-newLine._transform = function (chunk, encoding, callback) {
-  let data = chunk.toString();
-  if (this.lastLine) {
-    data = this.lastLine + data;
-  }
-  const lines = data.split('\n');
-  this.lastLine = lines.splice(lines.length - 1, 1)[0];
-  lines.forEach(this.push.bind(this));
-  callback();
-};
-
-newLine._flush = function (callback) {
-  if (this.lastLine) {
-    this.push(this.lastLine);
-  }
-  this.lastLine = '';
-  callback();
-};
-// ++++++++++++++++++++++++++++++ BUFFER PARSING END ++++++++++++++++++++++++++++++
 //
 // ++++++++++++++++++++++++++++++ MAIN THREAD START ++++++++++++++++++++++++++++++
 
@@ -64,36 +40,53 @@ server.addListener('upgrade', function(req,res){
 console.log(' [*] Listening on 0.0.0.0:' + webserverport );
 server.listen(webserverport, '0.0.0.0');
 
-
-
 // Iterative for each server in servers.json
-console.log("Starting socket connections to Tacview.");
+servers.forEach((dcsserver) => {
 
-servers.forEach((i) => {
-  const host = i.url;
-  const port = i.port;
-  const servername = i.servername;
-  const serverid = i.id;
-  console.log("Tacview socket opened for: " + i.servername);
+  // ++++++++++++++++++++++++++++++ BUFFER PARSING START ++++++++++++++++++++++++++++++
+  const { Transform } = require('stream');
+  const newLine = new Transform();
+
+  newLine._transform = function (chunk, encoding, callback) {
+    let data = chunk.toString();
+    if (this.lastLine) {
+      data = this.lastLine + data;
+    }
+    const lines = data.split('\n');
+    this.lastLine = lines.splice(lines.length - 1, 1)[0];
+    lines.forEach(this.push.bind(this));
+    callback();
+  };
+
+  newLine._flush = function (callback) {
+    if (this.lastLine) {
+      this.push(this.lastLine);
+    }
+    this.lastLine = '';
+    callback();
+  };
+  // ++++++++++++++++++++++++++++++ BUFFER PARSING END ++++++++++++++++++++++++++++++
+
+  console.log("Tacview socket opened for: " + dcsserver.servername);
 
   // Setup connection
   const connection = new net.Socket();
-  let serverupdate;
 
   // SetGlobal to send full array on start up
   sendglobal=true;
 
   var setOnce = false;
   // Start connecting
-  connection.connect(port, host, function () {
+  connection.connect(dcsserver.port, dcsserver.url, function () {
     connection.write(connectionstring);
 
-    // Start the Tacview sockets
+    // Start the WebGCI sockets
     var sockjs_echo = sockjs.createServer();
     sockjs_echo.on('connection', function(conn) {
         console.log('connection start' + ",source " + conn.remoteAddress + ":" + conn.remotePort + ",URL " + conn.url);
         if (!setOnce) {
-        serverupdate = setInterval(() => { general_functions.GetArray(i.serverarray, i.serverarraydiff, sendglobal, timer, delay, conn, servername) }, delay);
+        let serverupdate;
+        serverupdate = setInterval(() => { general_functions.GetArray(dcsserver.serverarray, dcsserver.serverarraydiff, sendglobal, timer, delay, conn, dcsserver.servername) }, delay);
         setOnce = true;
         }
 
@@ -102,7 +95,7 @@ servers.forEach((i) => {
         });
     });
 
-    sockjs_echo.installHandlers(server, {prefix:'/' + serverid});
+    sockjs_echo.installHandlers(server, {prefix:'/' + dcsserver.id});
 
   // Console will print the message
   console.log('Server running.');
@@ -137,10 +130,10 @@ servers.forEach((i) => {
     // Grab the reference (offset) values for long and lat values.
     if (/^0,.*/.test(values)) {
       if (/^0,ReferenceLatitude/.test(values)) {
-        reflat = parseInt(values.match(/^0,ReferenceLatitude=(\d+)$/m)[1]);
+        dcsserver.reflat = parseInt(values.match(/^0,ReferenceLatitude=(\d+)$/m)[1]);
       }
       if (/^0,ReferenceLongitude/.test(values)) {
-        reflong = parseInt(values.match(/^0,ReferenceLongitude=(\d+)$/m)[1]);
+        dcsserver.reflong = parseInt(values.match(/^0,ReferenceLongitude=(\d+)$/m)[1]);
       }
       return;
     }
@@ -149,13 +142,13 @@ servers.forEach((i) => {
 
     // Add the deleted property if Tacview marks an object as dead with a hyphen at the start of the ID then set the name from ID.
     if (/^-.*/.test(values[0])) {
-      item.name = general_functions.GetServerName(servername) + "-" + values[0].substring(1);
+      item.name = general_functions.GetServerName(dcsserver.servername) + "-" + values[0].substring(1);
       item.deleted = true;
     } else {
-      item.name = general_functions.GetServerName(servername) + "-" + values[0];
+      item.name = general_functions.GetServerName(dcsserver.servername) + "-" + values[0];
     }
     // Convert transform to actual discrete vars.
-    if (values[1]) { payload_parsing_functions.ConvertTransform(values[1]) }
+    if (values[1]) { payload_parsing_functions.ConvertTransform(values[1],dcsserver) }
 
     // Convert further arguments into discrete vars / item properties. 
     values.slice(2, values.length).forEach(payload_parsing_functions.ConvertArguments); 
@@ -203,7 +196,8 @@ servers.forEach((i) => {
     }
   }
     //console.log(item);
-    array_parsing_functions.PushToArray(i.serverarraydiff, item);
+    array_parsing_functions.PushToArray(dcsserver.serverarraydiff, item);
+    
   });
 
 });

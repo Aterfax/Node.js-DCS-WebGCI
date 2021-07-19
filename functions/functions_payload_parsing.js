@@ -10,7 +10,7 @@ module.exports = {
           case 'Country': item.Country = tokens[1]; break;
         }
     },
-    ConvertTransform: function (payload) {
+    ConvertTransform: function (payload,dcsserver) {
         payload = payload.substr(2);
         item.original = payload;
         const tokens = payload.split('|');
@@ -18,16 +18,16 @@ module.exports = {
         for (let i = 0; i < tokens.length; i++) {
             if ((tokens[i] != null) && (tokens[i] !== '') && (tokens.length === 5)) {
                 switch (i) {
-                    case 0: item.lon = parseFloat(tokens[i]) + reflong; break;
-                    case 1: item.lat = parseFloat(tokens[i]) + reflat; break;
+                    case 0: item.lon = parseFloat(tokens[i]) + dcsserver.reflong; break;
+                    case 1: item.lat = parseFloat(tokens[i]) + dcsserver.reflat; break;
                     case 2: item.alt = parseFloat(tokens[i]); break;
                     case 3: item.U = parseFloat(tokens[i]); break;
                     case 4: item.V = parseFloat(tokens[i]); break;
                 }
             } else if ((tokens[i] != null) && (tokens[i] !== '')) {
                 switch (i) {
-                    case 0: item.lon = parseFloat(tokens[i]) + reflong; break;
-                    case 1: item.lat = parseFloat(tokens[i]) + reflat; break;
+                    case 0: item.lon = parseFloat(tokens[i]) + dcsserver.reflong; break;
+                    case 1: item.lat = parseFloat(tokens[i]) + dcsserver.reflat; break;
                     case 2: item.alt = parseFloat(tokens[i]); break;
                     case 3: item.roll = parseFloat(tokens[i]); break;
                     case 4: item.pitch = parseFloat(tokens[i]); break;

@@ -106,6 +106,7 @@ function getColorBlendMode(colorBlendMode) {
             for (var i = 0; i < data.length; i++) {
               PushToArray(ServerArray, data[i]);
             }
+            console.log(ServerArray);
             for (var i = 0; i < ServerArray.length; i++) {
               //console.log(data[i]);
               if(ServerArray[i].deleted){
@@ -169,7 +170,7 @@ function getColorBlendMode(colorBlendMode) {
         };
     }
 
-    console.log("CONNECT TO",location.pathname + 'socket');
+    console.log("CONNECT TO: " + '/' + serverid );
     connect();
 
     document.addEventListener ("keydown", function (ev) {
