@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Node-RED 3D Map all the Things</title>
+    <title>DCS WebGCI Map</title>
     <meta charset='utf-8' />
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no'/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -20,6 +20,10 @@
   <div id="cesiumContainer"></div>
 
    <script>
+const queryString = window.location.search;
+const urlParams = new URLSearchParams(queryString);
+const serverid = urlParams.get('serverid')
+console.log("Server ID is: " + serverid);
 
 ServerArray=[];
 
@@ -75,7 +79,7 @@ function getColorBlendMode(colorBlendMode) {
     // ---- Connect to the Node-RED Events Websocket --------------------
 
     var connect = function() {
-        var sockjs_url = '/echo';
+        var sockjs_url = '/' + serverid;
         ws = new SockJS(sockjs_url);      
         //ws = new SockJS(location.pathname.split("index")[0] + 'socket');
         ws.onopen = function() {
@@ -145,7 +149,7 @@ function getColorBlendMode(colorBlendMode) {
                       silhouetteSize: 2.0,
                     }
                 });
-                console.log(ServerArray[i]);
+                //console.log(ServerArray[i]);
 
               } else {
                 object = viewer.entities.getById(ServerArray[i].name);

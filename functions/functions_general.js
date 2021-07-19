@@ -11,7 +11,7 @@ module.exports = {
     GetServerName: function (servername) {
         return servername || 'UNSET-SERVER-PLEASE-SET-SERVERNAME';
     },
-    GetArray: function (Original, Diff, sendglobal, timer, delay, conn) {
+    GetArray: function (Original, Diff, sendglobal, timer, delay, conn, servername) {
         if (timer > 5000) {
             // node.log(timer);
             timer = 0;
@@ -29,12 +29,11 @@ module.exports = {
         } else {
             item = Diff;
         }
-        console.log("Timestep happened. - Object count: " + item.length);
+        console.log("Server:" + servername + " timestep happened. - Object count: " + item.length);
         message = JSON.stringify(item);
         //console.log(message);
         conn.write(message);
-        // Actually send the update
-        //node.send(msg);
+
         // Reset the sendglobal boolean
         //sendglobal=false;
         

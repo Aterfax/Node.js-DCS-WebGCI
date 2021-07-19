@@ -1,0 +1,24 @@
+{
+    "id": 0,
+    "url": "pgaw.hoggitworld.com",
+    "port": 42674,
+    "servername": "pgaw",
+    "serverarray": [],
+    "serverarraydiff": []
+},
+{
+    "id": 1,
+    "url": "gaw.hoggitworld.com",
+    "port": 42674,
+    "servername": "gaw",
+    "serverarray": [],
+    "serverarraydiff": []
+},
+{
+    "id": 2,
+    "url": "saw.hoggitworld.com",
+    "port": 42674,
+    "servername": "saw",
+    "serverarray": [],
+    "serverarraydiff": []
+}
