@@ -29,7 +29,7 @@ var old_data_functions = require('./functions/functions_old_data.js');
 // ++++++++++++++++++++++++++++++ MAIN THREAD START ++++++++++++++++++++++++++++++
 
 // Start the webserver
-var static_directory = new node_static.Server(__dirname);
+var static_directory = new node_static.Server("client");
 var server = http.createServer();
 server.addListener('request', function(req, res) {
     static_directory.serve(req, res);
@@ -84,14 +84,10 @@ servers.forEach((dcsserver) => {
     var sockjs_echo = sockjs.createServer();
     sockjs_echo.on('connection', function(conn) {
         console.log('connection start' + ",source " + conn.remoteAddress + ":" + conn.remotePort + ",URL " + conn.url);
-        if (!setOnce) {
         let serverupdate;
         serverupdate = setInterval(() => { general_functions.GetArray(dcsserver.serverarray, dcsserver.serverarraydiff, sendglobal, timer, delay, conn, dcsserver.servername) }, delay);
-        setOnce = true;
-        }
-
         conn.on('close', function() {
-          console.log('close ' + conn.remoteAddress + ":" + conn.remotePort );
+          console.log('connection close ' + conn.remoteAddress + ":" + conn.remotePort );
         });
     });
 
@@ -179,10 +175,14 @@ servers.forEach((dcsserver) => {
       if (item.Coalition === 'Allies') { item.side = 'East' } // This is set for Platform overrides.
       if (item.Coalition === 'Enemies') { item.side = 'West' } // This is set also for Platform overrides.
     }
-
-    // Begin any required Platform Overrides
-    //if (item.Platform){
-    //}
+  // Set platform overrides
+  if (item.Platform) {  
+    // Override SAMs
+    radiusvalue = platform_functions.PlatformOverrides(item.Platform, "Radius", item.side);
+	layervalue = platform_functions.PlatformOverrides(item.Platform, "Layer", item.side);
+    if (Boolean(radiusvalue)){ item.radius = radiusvalue }
+	if (Boolean(layervalue)){ item.layer = layervalue }
+  }
 
     // Add the speed if desired.
     //item = item(addOldTimestamp);
@@ -195,6 +195,7 @@ servers.forEach((dcsserver) => {
       return;
     }
   }
+  
     //console.log(item);
     array_parsing_functions.PushToArray(dcsserver.serverarraydiff, item);
     

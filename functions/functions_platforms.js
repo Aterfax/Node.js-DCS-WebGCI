@@ -1,5 +1,5 @@
 module.exports = {
-    PlatformOverrides: function (Platform, OverrideType, Icon, Layer, Radius, Side) {
+    PlatformOverrides: function (Platform, OverrideType, Side) {
         let value = '';
         if (OverrideType === 'Icon') {
           switch (Platform) {

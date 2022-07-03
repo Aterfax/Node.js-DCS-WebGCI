@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DCS WebGCI Map</title>
+    <meta charset='utf-8' />
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no'/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <style>
+      @import url(https://sandcastle.cesium.com/templates/bucket.css);
+        #cesiumContainer{
+        overflow: none;
+        width: 100%;
+        height: 100%;
+        }
+      
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.95/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.95/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+
+
+</head>
+<body>
+
+<div id="cesiumContainer" class="fullSize"></div>
+<div id="toolbar"></div>
+
+<script>
+const queryString = window.location.search;
+const urlParams = new URLSearchParams(queryString);
+const serverid = urlParams.get('serverid')
+console.log("Server ID is: " + serverid);
+
+ServerArray=[];
+
+
+function PushToArray (arr, obj) {
+  const index = arr.findIndex((e) => e.name === obj.name);
+    if (index === -1) {
+      arr.push(obj);
+  } else {
+    Object.assign(arr[index], obj);
+  }
+  return arr;
+}
+
+function getColor(colorName, alpha) {
+  var color = Cesium.Color[colorName.toUpperCase()];
+  return Cesium.Color.fromAlpha(color, parseFloat(alpha));
+}
+
+function getColorBlendMode(colorBlendMode) {
+  return Cesium.ColorBlendMode[colorBlendMode.toUpperCase()];
+}
+
+function maximumScale(model) {
+  let maxpixelscale = 300;
+  if (model) {
+    switch (model) {
+      case 'Core.Cube.obj.glb': maxpixelscale = 100; break;
+    }
+  }
+  return maxpixelscale;
+}
+
+function minimumScale(model) {
+  let minpixelscale = 128;
+  if (model) {
+    switch (model) {
+      case 'Core.Cube.obj.glb': minpixelscale = 22; break;
+      case 'Core.Vehicle.obj.glb': minpixelscale = 22; break;
+    }
+  }
+  return minpixelscale;
+}
+
+function getModel(Platform) {
+  let modelname = 'Core.Cube.obj.glb';
+  if (Platform) {
+    switch (Platform) {
+          case 'FARP': modelname = "Building.OilPlatform.obj.glb"; break;
+          case 'PIOTR': modelname = "Watercraft.Moskva.obj.glb"; break;
+          case 'FA-18C_hornet': modelname = "FixedWing.F-18C.obj.glb"; break;
+          case 'F-16C_50': modelname = "FixedWing.F-16.obj.glb"; break;
+          case 'NEUSTRASH': modelname = "Core.Watercraft.obj.glb"; break;
+          case 'Stennis': modelname = "Watercraft.CVN-74.obj.glb"; break;
+          case 'KUZNECOW': modelname = "Watercraft.Admiral Kuznetsov.obj.glb"; break;
+          case 'F-14B': modelname = "FixedWing.F-14.obj.glb"; break;
+          case 'AV8BNA': modelname = "FixedWing.AV-8B.obj.glb"; break;
+          case 'TICONDEROG': modelname = "Watercraft.CG-47.obj.glb"; break;
+          case 'LHA_Tarawa': modelname = "Watercraft.LHA-1.obj.glb"; break;
+          case 'MOSCOW': modelname = "Watercraft.Moskva.obj.glb"; break;
+          case 'outpost': modelname = "Building.OilPlatform.obj.glb"; break;
+          case 'F-14A-135-GR': modelname = "FixedWing.F-14.obj.glb"; break;
+          case 'JF-17': modelname = "FixedWing.JF-17.obj.glb"; break;
+          case 'Mi-24P': modelname = "Rotorcraft.Mi-24.obj.glb"; break;
+          case 'AIM_120C': modelname = "Missile.AIM-120C.obj.glb"; break;
+          case 'A-50': modelname = "FixedWing.A-50.obj.glb"; break;
+          case 'E-3A': modelname = "FixedWing.E-3.obj.glb"; break;
+          case 'E-2C': modelname = "FixedWing.E-2C.obj.glb"; break;
+          case 'KC-135': modelname = "FixedWing.KC-135C.obj.glb"; break;
+          case 'Su-25': modelname = "FixedWing.Su-25.obj.glb"; break;
+          case 'Su-25TM': modelname = "FixedWing.Su-25.obj.glb"; break;
+          case 'MiG-29A': modelname = "FixedWing.MiG-29.obj.glb"; break;
+          case 'Su-27': modelname = "FixedWing.Su-27.obj.glb"; break;
+          case 'AIM_9X': modelname = "Missile.AIM-9M.obj.glb"; break;
+          case 'weapons.shells.2A42_30_HE': modelname = "Core.Cube.obj.glb"; break;
+          case 'weapons.shells.2A42_30_AP': modelname = "Core.Cube.obj.glb"; break;
+          case 'P_27TE': modelname = "Core.Missile.obj.glb"; break;
+          case '9M317': modelname = "Missile.9M330.obj.glb"; break;
+          case 'AIM_54C_Mk47': modelname = "Missile.AIM-54A.obj.glb"; break;
+          case 'Fuel tank 300 gal': modelname = "Other.FuelTank.obj.glb"; break;
+          case 'SA5B55': modelname = "Core.Missile.obj.glb"; break;
+          case 'P_73': modelname = "Core.Missile.obj.glb"; break;
+          case 'UH-1H': modelname = "Rotorcraft.UH-1.obj.glb"; break;
+          case 'Vulcan': modelname = "Core.Vehicle.obj.glb"; break;
+          case 'Gepard': modelname = "Core.Vehicle.obj.glb"; break;
+          case 'M1097 Avenger': modelname = "AntiAircraft.SAM.Avenger.obj.glb"; break;
+          case 'Roland ADS': modelname = "AntiAircraft.SAM.Launcher.obj.glb"; break;
+          case 'M48 Chaparral': modelname = "AntiAircraft.SAM.Launcher.obj.glb"; break;
+          case 'ZSU-23-4 Shilka': modelname = "AntiAircraft.AAA.ZSU-23-4.obj.glb"; break;
+          case 'Soldier stinger': modelname = "AntiAircraft.SAM.Manpad.obj.glb"; break;
+          case 'F-5E-3': modelname = "FixedWing.F-5.obj.glb"; break;
+          case 'Ural-375': modelname = "Vehicle.Truck.Ural.obj.glb"; break;
+          case 'FIM_92C': modelname = "AntiAircraft.SAM.Manpad.obj.glb"; break;
+          case '275 Gal Fuel Tank': modelname = "Other.FuelTank.obj.glb"; break;
+          case 'p-19 s-125 sr': modelname = "AntiAircraft.SAM.P-15.obj.glb"; break;
+          case 'Land_Rover_101_FC': modelname = "Vehicle.Car.Jeep.obj.glb"; break;
+          case 'Kub 2P25 ln': modelname = "AntiAircraft.SAM.SA-6.1S91.obj.glb"; break;
+          case 'Kub 1S91 str': modelname = "AntiAircraft.SAM.SA-6.2P25.obj.glb"; break;
+
+
+      }
+  }
+  //modelname = "Cesium_Air.glb";
+  //modelname = "FixedWing.AV-8B.obj.glb";
+  return modelname;
+}
+
+
+   // Grant CesiumJS access to your ion assets
+   Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwYWZlYjYwZC0yN2IyLTRiZmMtYWE3Yy0zNDZhMDYwNDBkOWMiLCJpZCI6NDU5NTAsImlhdCI6MTYxNTYzMTI4N30.M7mKzFBr1UaANvIW7DXevvPXKAe75kWNPDpwSevfqdU";
+   const viewer = new Cesium.Viewer(
+     'cesiumContainer', { terrainProvider: Cesium.createWorldTerrain(),
+      shadows: false,
+      shouldAnimate : true
+   });
+   viewer.extend(Cesium.viewerCesiumInspectorMixin);
+
+   function ClearCollection(binary){
+       ServerArray=[];
+       viewer.entities.removeAll();
+       return binary;
+   }
+
+
+   viewer.camera.flyTo({
+
+     destination : Cesium.Cartesian3.fromDegrees(44.552004, 34.148779, 10000000),
+
+     orientation : {
+
+       heading : Cesium.Math.toRadians(0.0),
+
+       pitch : Cesium.Math.toRadians(-90),
+
+     }
+
+   });
+   
+    // ---- Connect to the Node-RED Events Websocket --------------------
+
+    var connect = function() {
+        var sockjs_url = '/' + serverid;
+        ws = new SockJS(sockjs_url);      
+        //ws = new SockJS(location.pathname.split("index")[0] + 'socket');
+        ws.onopen = function() {
+            console.log("CONNECTED");
+            // if (!inIframe) {
+            //     document.getElementById("foot").innerHTML = "<font color='#494'>"+ibmfoot+"</font>";
+            // }
+            ws.send(JSON.stringify({action:"connected"}));
+            //clearup = setInterval(() => {ClearCollection(1)}, 20000);
+                   // setInterval(() => { GetArray(ServerArray, ServerArrayDiff, global.get('sendglobal'), timer) }, delay);
+        };
+
+        ws.onclose = function() {
+            console.log("DISCONNECTED");
+            // if (!inIframe) {
+            //     document.getElementById("foot").innerHTML = "<font color='#900'>"+ibmfoot+"</font>";
+            // }
+            setTimeout(function() { connect(); }, 2500);
+        };
+
+        ws.onerror = function(event) {
+          console.error("WebSocket error observed:", event);
+        };
+
+        ws.onmessage = function(e) {
+            viewer.entities.suspendEvents;
+            var data = JSON.parse(e.data);
+            for (var i = 0; i < data.length; i++) {
+              PushToArray(ServerArray, data[i]);
+            }
+            //console.log(ServerArray);
+            for (var i = 0; i < ServerArray.length; i++) {
+              if(ServerArray[i].deleted){
+                viewer.entities.removeById(ServerArray[i].name)
+                continue;
+              }
+              if (viewer.entities.getById(ServerArray[i].name) == undefined) {
+                var position = Cesium.Cartesian3.fromDegrees(ServerArray[i].lon,ServerArray[i].lat,ServerArray[i].height);
+                console.log(ServerArray[i].Platform);
+                model = getModel(ServerArray[i].Platform)
+                var heading = Cesium.Math.toRadians(ServerArray[i].hdg - 90 || 0);
+                var pitch = Cesium.Math.toRadians(ServerArray[i].pitch || 0) // ServerArray[i].pitch ||
+                var roll = Cesium.Math.toRadians((360 + ServerArray[i].roll) % 360) || 0;
+                var hpr = new Cesium.HeadingPitchRoll(heading, pitch, roll);
+                var orientation = Cesium.Transforms.headingPitchRollQuaternion(position,hpr);
+                color = 'YELLOW';
+                if (ServerArray[i].Coalition){
+                  // console.log(ServerArray[i].Coalition)
+                  switch (ServerArray[i].Coalition) {
+                    case 'Allies': color = 'RED'; break;
+                    case 'Enemies': color = 'BLUE'; break;
+                    case 'Neutrals': color = 'GREEN'; break;
+                    case 'Unknown': color = 'YELLOW'; break;
+                    }
+                  } else {
+                    color = 'YELLOW';
+                  }
+
+                var entity = viewer.entities.add({
+                    id: ServerArray[i].name,
+                    position: position,
+                    orientation: orientation,
+                    model: {
+                      uri: '../../../../assets/models/'+ model,
+                      minimumPixelSize: minimumScale(model),
+                      maximumScale: maximumScale(model),
+                      color:  getColor(color || 'BLACK',1),
+                      colorBlendMode: getColorBlendMode("Highlight"),
+                      colorBlendAmount: 0.3,
+                      //silhouetteColor: getColor('BLACK',1),
+                      //silhouetteAlpha: 0.5,
+                      //silhouetteSize: 5.0,
+                    }
+                });
+                //console.log(ServerArray[i]);
+
+              } else {
+                object = viewer.entities.getById(ServerArray[i].name);
+                var position = Cesium.Cartesian3.fromDegrees(ServerArray[i].lon,ServerArray[i].lat,ServerArray[i].height);
+                //console.log(position);
+                var heading = Cesium.Math.toRadians(ServerArray[i].hdg - 90 || 0);
+                var pitch = Cesium.Math.toRadians(ServerArray[i].pitch || 0) // ServerArray[i].pitch ||
+                var roll = Cesium.Math.toRadians((360 + ServerArray[i].roll) % 360) || 0;
+                var hpr = new Cesium.HeadingPitchRoll(heading, pitch, roll);
+                var orientation = Cesium.Transforms.headingPitchRollQuaternion(position,hpr);
+                //console.log(orientation);
+                object.position = position;
+                object.orientation = orientation;
+              }
+            };
+            viewer.entities.resumeEvents;
+        };
+    }
+
+    console.log("CONNECT TO: " + '/' + serverid );
+    connect();
+
+    document.addEventListener ("keydown", function (ev) {
+        if (ev.ctrlKey  &&  ev.altKey  &&  ev.code === "Digit3") {
+            ws.close();
+            //window.onbeforeunload = null;
+            window.location.href = "index.html";
+        }
+    });
+
+</script>
+</body>
+</html>

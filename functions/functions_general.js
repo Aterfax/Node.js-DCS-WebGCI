@@ -23,30 +23,33 @@ module.exports = {
         // First update the main array
         serverarraydiff.forEach(obj => array_parsing_functions.PushToArray(serverarray, obj));
         
+
         // Check for whether we want to send a full update or just the diff.
         if (sendglobal) {
-            array = serverarray;
+            message = JSON.stringify(serverarray);
         } else {
-            array = serverarraydiff;
+            message = JSON.stringify(serverarraydiff);
         }
-        console.log("Server:" + servername + " timestep happened. - Object count: " + array.length);
-        message = JSON.stringify(serverarray);
+
+        //console.log("Server:" + servername + " timestep happened. - Object count: " + serverarray.length);
         //console.log(message);
         conn.write(message);
 
         // Reset the sendglobal boolean
         //sendglobal=false;
         
+
+        serverarraydiff = [];
         // Delete the objects with the property deleted
         serverarray = serverarray.filter(el => !el.deleted);
-        serverarraydiff = [];
+
 
     },
     ConvertAltitude: function (altitudeM) {
         let altitudeF = altitudeM * 3.2808;
         altitudeF = parseFloat(altitudeF); // 1000 division not needed for Cesium JS;
         altitudeF = altitudeF.toPrecision(3);
-        return altitudeF;
+        return altitudeM;
     },
     Distance: function (startLat, startLng, destLat, destLng, unit) {
         if ((startLat === destLat) && (startLng === destLng)) {

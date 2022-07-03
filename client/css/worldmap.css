@@ -1,0 +1,237 @@
+
+body {
+    width:100%;
+    height:100%;
+    left:0px;
+    margin:0;
+    padding:0;
+    font:14px Verdana, Arial, sans-serif;
+    overflow:hidden;
+}
+
+p, h1, h2, h3, h4 {
+    margin-block-start: 0em;
+    margin-block-end: 0em;
+}
+
+b {
+    font-size: larger;
+}
+
+a {
+    color:#444;
+    text-decoration:none;
+}
+
+.leaflet-interactive:hover {
+    filter: opacity(0.7);
+}
+
+.topbar {
+    font-size:16px;
+    vertical-align:middle;
+}
+
+.leaflet-tooltip {
+    padding: 1px 4px !important;
+}
+
+.leaflet-touch .leaflet-control-layers-toggle {
+    width:35px;
+    height:35px;
+}
+
+#topbar {
+    color:#c7c7c7;
+    background-color:black;
+    position:fixed;
+    top:0px;
+    left:0px;
+    height:40px;
+    line-height:40px;
+    width:100%;
+}
+
+#topbar img {
+    padding-left:12px;
+    padding-right:8px;
+    vertical-align: middle;
+}
+
+#results {
+    position:fixed;
+    background-color:black;
+    top:6px;
+    right:8px;
+    height:40px;
+}
+
+#map {
+    position:fixed;
+    top:40px;
+    bottom:1px;
+    min-width:100%;
+    display:block;
+}
+
+#footer {
+    position:absolute;
+    bottom:0px;
+    left:-1px;
+    z-index:999;
+    font-size:9px;
+}
+
+#heat {
+    position:absolute;
+    height:20px;
+    bottom:20px;
+    right:10px;
+    z-index:10;
+}
+
+#heat button {
+    padding:2px 10px;
+    border-radius:4px;
+    background-color:#fff;
+}
+
+#menu {
+    color:#fff;
+    background-color:#000;
+    position:fixed;
+    top:38px;
+    right:0px;
+    width:200px;
+    z-index:9998;
+    border-radius: 4px;
+    padding: 2px 4px 6px 0px;
+}
+
+#menu td {
+    font-size:14px;
+    padding-top:2px;
+    padding-left:8px;
+}
+
+#menu input {
+    color:#fff;
+    background-color:#666;
+    text-align:right;
+    padding-right:7px;
+    border:2px solid #000;
+    line-height:20px;
+}
+
+#menu input[type=checkbox], input[type=radio] {
+    vertical-align:middle;
+    position:relative;
+    bottom:1px;
+}
+
+#rinput {
+    font-size:14px;
+    padding:2px;
+    height:20px;
+    width:237px;
+}
+
+#delbutton {
+    font-size: 14px;
+    margin-top: 4px;
+    border-radius: 4px;
+    background-color: #910000;
+    color: white;
+}
+
+.circle {
+    background-color:rgba(255,255,40,0.7);
+    border-color:darkgrey;
+    border-radius:4px;
+    border-style:solid;
+    border-width:2px;
+}
+
+.f {
+    background-color: rgba(30,120,255,0.6);
+    border-color: dodgerblue;
+}
+
+.h {
+    background-color: rgba(255,60,0,0.7);
+    border-color: red;
+    border-radius: 8px;
+}
+
+.n {
+    background-color: rgba(40,255,40,0.6);
+    border-color: green;
+}
+
+.p {
+    background-color: rgba(255,0,255,0.5);
+    border-color: yellow;
+    border-radius: 1px;
+}
+
+.e {
+    background-color: rgba(255,255,255,0);
+    border-color: black;
+    border-radius: 11px;
+}
+
+.up-triangle {
+   width:0 !important;
+   height:0 !important;
+   border-bottom:20px solid red;
+   border-left:10px solid transparent;
+   border-right:10px solid transparent;
+}
+
+.diamond {
+   width:80px !important;
+   height:80px !important;
+   background:purple;
+   margin:3px 0 0 30px !important;
+   /* Rotate */
+   -webkit-transform:rotate(-45deg) !important;
+   -moz-transform:rotate(-45deg);
+   -ms-transform:rotate(-45deg);
+   -o-transform:rotate(-45deg);
+   transform:rotate(-45deg);
+   /* Rotate Origin */
+   -webkit-transform-origin:0 100% !important;
+   -moz-transform-origin:0 100%;
+   -ms-transform-origin:0 100%;
+   -o-transform-origin:0 100%;
+   transform-origin:0 100%;
+}
+
+.wm-red { color: #FF4040; }
+.wm-blue { color: #4040F0; }
+.wm-green { color: #40D040; }
+.wm-yellow { color: #FFFF40; }
+.wm-black { color: #333333; }
+.wm-white { color: #EEEEEE; }
+.wm-magenta { color: #F040F0; }
+.wm-cyan { color: #40F0F0; }
+
+.legend {
+    padding: 6px 8px;
+    background: rgba(255, 255, 255, 0.8);
+    line-height: 24px;
+    color: #555;
+}
+
+.legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin: 0 8px 0 0;
+    opacity: 0.7;
+}
+
+.legend i.icon {
+    background-size: 18px;
+    background-color: rgba(255, 255, 255, 1);
+}
