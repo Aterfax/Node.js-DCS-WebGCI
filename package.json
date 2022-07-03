@@ -8,7 +8,6 @@
   },
   "dependencies": {
     "express": "^4.18.1",
-    "node-static": "^0.7.11",
     "socket.io": "^4.5.1",
     "sockjs": "^0.3.24"
   }
