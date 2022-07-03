@@ -1,8 +1,9 @@
 // ++++++++++++++++++++++++++++++ IMPORT MODULES START ++++++++++++++++++++++++++++++
 var http = require('http');
 var sockjs = require('sockjs');
-var node_static = require('node-static');
 var net = require('net');
+const express = require('express')
+const app = express();
 // ++++++++++++++++++++++++++++++ IMPORT MODULES END ++++++++++++++++++++++++++++++++
 //
 // ++++++++++++++++++++++++++++++ SETUP START ++++++++++++++++++++++++++++++
@@ -11,7 +12,6 @@ const delay = 1000; // delay in milliseconds
 let timer = 0; // Start at zero
 const webserverport = '8081';
 var servers = require("./servers.json")
-
 // ++++++++++++++++++++++++++++++ SETUP END ++++++++++++++++++++++++++++++
 //
 // ++++++++++++++++++++++++++++++ IMPORT FUNCTIONS START ++++++++++++++++++++++++++++++
@@ -28,17 +28,14 @@ var old_data_functions = require('./functions/functions_old_data.js');
 //
 // ++++++++++++++++++++++++++++++ MAIN THREAD START ++++++++++++++++++++++++++++++
 
+// Configure the webserver
+app.use(express.static('client'));
+app.get('/', (req, res) => {
+  res.send('Nope, you need to select a server! e.g. index.html?serverid=0');
+});
+
 // Start the webserver
-var static_directory = new node_static.Server("client");
-var server = http.createServer();
-server.addListener('request', function(req, res) {
-    static_directory.serve(req, res);
-});
-server.addListener('upgrade', function(req,res){
-    res.end();
-});
-console.log(' [*] Listening on 0.0.0.0:' + webserverport );
-server.listen(webserverport, '0.0.0.0');
+server = app.listen(webserverport, () => console.log(`Server listening on port: ${webserverport}`));
 
 // Iterative for each server in servers.json
 servers.forEach((dcsserver) => {
@@ -175,14 +172,14 @@ servers.forEach((dcsserver) => {
       if (item.Coalition === 'Allies') { item.side = 'East' } // This is set for Platform overrides.
       if (item.Coalition === 'Enemies') { item.side = 'West' } // This is set also for Platform overrides.
     }
-  // Set platform overrides
-  if (item.Platform) {  
-    // Override SAMs
-    radiusvalue = platform_functions.PlatformOverrides(item.Platform, "Radius", item.side);
-	layervalue = platform_functions.PlatformOverrides(item.Platform, "Layer", item.side);
-    if (Boolean(radiusvalue)){ item.radius = radiusvalue }
-	if (Boolean(layervalue)){ item.layer = layervalue }
-  }
+    // Set platform overrides
+    if (item.Platform) {  
+      // Override SAMs
+      radiusvalue = platform_functions.PlatformOverrides(item.Platform, "Radius", item.side);
+    layervalue = platform_functions.PlatformOverrides(item.Platform, "Layer", item.side);
+      if (Boolean(radiusvalue)){ item.radius = radiusvalue }
+    if (Boolean(layervalue)){ item.layer = layervalue }
+    }
 
     // Add the speed if desired.
     //item = item(addOldTimestamp);
@@ -190,11 +187,11 @@ servers.forEach((dcsserver) => {
 
     // Convert Lat and Long Unit type and add D M S
     //item = item.map(({ lat, lon, ...rest }) => ({ dlat: general_functions.ConvertDDToDMS(lat,0), dlon: general_functions.ConvertDDToDMS(lon,1), lat, lon, ...rest }));
-  if (item.Type){
-    if (item.Type.includes("Parachutist")){
-      return;
+    if (item.Type){
+      if (item.Type.includes("Parachutist")){
+        return;
+      }
     }
-  }
   
     //console.log(item);
     array_parsing_functions.PushToArray(dcsserver.serverarraydiff, item);
