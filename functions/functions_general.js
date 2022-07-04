@@ -33,8 +33,8 @@ module.exports = {
         // Check for whether we want to send a full update or just the diff.
         if (sendglobal) {
             message = JSON.stringify(serverarray);
-            console.log("Sending Full array," + servername + " array length is:");
-            console.log(serverarray.length);
+            //console.log("Sending Full array," + servername + " array length is:");
+            //console.log(serverarray.length);
         } else {
             message = JSON.stringify(serverarraydiff);
             //console.log("Sending Diff array");
@@ -47,25 +47,16 @@ module.exports = {
 
         // Reset the sendglobal boolean
         sendglobal=false;
-        
 
-        serverarraydiff = [];
-
+        //serverarraydiff = [];
 
         delarray = serverarray.filter(el => el.deleted);
         console.log("Server:" + servername + " Object count deleted before clearing: ");
         console.log(delarray.length);
 
         // Delete the objects with the property deleted
-        serverarray = serverarray.filter(el => !el.deleted);
-
-        delarray = serverarray.filter(el => el.deleted);
-        console.log("Server:" + servername + " Object count deleted after clearing: ");
-        console.log(delarray.length);
-
+        serverarray.splice(0, serverarray.length, ...serverarray.filter(el => !el.deleted));
         return serverarray;
-
-
     },
     ConvertAltitude: function (altitudeM) {
         let altitudeF = altitudeM * 3.2808;

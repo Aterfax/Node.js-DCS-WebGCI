@@ -37,7 +37,7 @@ app.get('/', (req, res) => {
 server = app.listen(webserverport, () => console.log(`Server listening on port: ${webserverport}`));
 
 // Iterative for each server in servers.json
-servers.forEach((dcsserver) => {
+servers.forEach((dcsserver, index) => {
 
   // ++++++++++++++++++++++++++++++ BUFFER PARSING START ++++++++++++++++++++++++++++++
   const { Transform } = require('stream');
@@ -82,7 +82,7 @@ servers.forEach((dcsserver) => {
         console.log('connection start' + ",source " + conn.remoteAddress + ":" + conn.remotePort + ",URL " + conn.url);
         let timer = {"value": 0}; // Start at zero
         let serverupdate;
-        serverupdate = setInterval(() => { dcsserver.serverarray = general_functions.GetArray(dcsserver.serverarray, dcsserver.serverarraydiff, sendglobal, timer, delay, conn, dcsserver.servername) }, delay);
+        serverupdate = setInterval(() => { servers[index].serverarray = general_functions.GetArray(servers[index].serverarray, servers[index].serverarraydiff, sendglobal, timer, delay, conn, dcsserver.servername) }, delay);
         conn.on('close', function() {
           console.log('connection close ' + conn.remoteAddress + ":" + conn.remotePort );
         });
@@ -194,7 +194,7 @@ servers.forEach((dcsserver) => {
     }
   
     //console.log(item);
-    array_parsing_functions.PushToArray(dcsserver.serverarraydiff, item);
+    array_parsing_functions.PushToArray(servers[index].serverarraydiff, item);
     
   });
 
