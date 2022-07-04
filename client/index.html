@@ -200,10 +200,10 @@ function getModel(Platform) {
         ws.onmessage = function(e) {
             viewer.entities.suspendEvents;
             var data = JSON.parse(e.data);
+            console.log(data.length);
             for (var i = 0; i < data.length; i++) {
               PushToArray(ServerArray, data[i]);
             }
-            //console.log(ServerArray);
             for (var i = 0; i < ServerArray.length; i++) {
               if(ServerArray[i].deleted){
                 viewer.entities.removeById(ServerArray[i].name)
@@ -211,7 +211,7 @@ function getModel(Platform) {
               }
               if (viewer.entities.getById(ServerArray[i].name) == undefined) {
                 var position = Cesium.Cartesian3.fromDegrees(ServerArray[i].lon,ServerArray[i].lat,ServerArray[i].height);
-                console.log(ServerArray[i].Platform);
+                //console.log(ServerArray[i].Platform);
                 model = getModel(ServerArray[i].Platform)
                 var heading = Cesium.Math.toRadians(ServerArray[i].hdg - 90 || 0);
                 var pitch = Cesium.Math.toRadians(ServerArray[i].pitch || 0) // ServerArray[i].pitch ||

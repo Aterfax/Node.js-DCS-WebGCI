@@ -9,7 +9,6 @@ const app = express();
 // ++++++++++++++++++++++++++++++ SETUP START ++++++++++++++++++++++++++++++
 const connectionstring = 'XtraLib.Stream.0\nTacview.RealTimeTelemetry.0\nnodejs_webgci\n0\0';
 const delay = 1000; // delay in milliseconds
-let timer = 0; // Start at zero
 const webserverport = '8081';
 var servers = require("./servers.json")
 // ++++++++++++++++++++++++++++++ SETUP END ++++++++++++++++++++++++++++++
@@ -81,8 +80,9 @@ servers.forEach((dcsserver) => {
     var sockjs_echo = sockjs.createServer();
     sockjs_echo.on('connection', function(conn) {
         console.log('connection start' + ",source " + conn.remoteAddress + ":" + conn.remotePort + ",URL " + conn.url);
+        let timer = {"value": 0}; // Start at zero
         let serverupdate;
-        serverupdate = setInterval(() => { general_functions.GetArray(dcsserver.serverarray, dcsserver.serverarraydiff, sendglobal, timer, delay, conn, dcsserver.servername) }, delay);
+        serverupdate = setInterval(() => { dcsserver.serverarray = general_functions.GetArray(dcsserver.serverarray, dcsserver.serverarraydiff, sendglobal, timer, delay, conn, dcsserver.servername) }, delay);
         conn.on('close', function() {
           console.log('connection close ' + conn.remoteAddress + ":" + conn.remotePort );
         });

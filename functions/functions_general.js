@@ -11,14 +11,20 @@ module.exports = {
     GetServerName: function (servername) {
         return servername || 'UNSET-SERVER-PLEASE-SET-SERVERNAME';
     },
+
     GetArray: function (serverarray, serverarraydiff, sendglobal, timer, delay, conn, servername) {
-        if (timer > 5000) {
-            // node.log(timer);
-            timer = 0;
-            sendglobal = true;
+
+
+        timer.value=timer.value+1;
+        //console.log(timer.value);
+
+        // Reset the sendglobal boolean
+        sendglobal=false;     
+        if (timer.value==10){
+            sendglobal=true;
+            timer.value=0;
         }
-        timer += delay;
-        
+        //console.log(sendglobal);
         //const msg = {};
         // First update the main array
         serverarraydiff.forEach(obj => array_parsing_functions.PushToArray(serverarray, obj));
@@ -27,21 +33,37 @@ module.exports = {
         // Check for whether we want to send a full update or just the diff.
         if (sendglobal) {
             message = JSON.stringify(serverarray);
+            console.log("Sending Full array," + servername + " array length is:");
+            console.log(serverarray.length);
         } else {
             message = JSON.stringify(serverarraydiff);
+            //console.log("Sending Diff array");
+
         }
 
         //console.log("Server:" + servername + " timestep happened. - Object count: " + serverarray.length);
-        //console.log(message);
+        //console.log(message.length);
         conn.write(message);
 
         // Reset the sendglobal boolean
-        //sendglobal=false;
+        sendglobal=false;
         
 
         serverarraydiff = [];
+
+
+        delarray = serverarray.filter(el => el.deleted);
+        console.log("Server:" + servername + " Object count deleted before clearing: ");
+        console.log(delarray.length);
+
         // Delete the objects with the property deleted
         serverarray = serverarray.filter(el => !el.deleted);
+
+        delarray = serverarray.filter(el => el.deleted);
+        console.log("Server:" + servername + " Object count deleted after clearing: ");
+        console.log(delarray.length);
+
+        return serverarray;
 
 
     },
