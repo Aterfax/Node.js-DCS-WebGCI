@@ -51,8 +51,7 @@ module.exports = {
         //serverarraydiff = [];
 
         delarray = serverarray.filter(el => el.deleted);
-        console.log("Server:" + servername + " Object count deleted before clearing: ");
-        console.log(delarray.length);
+        console.log(`Server:${servername} Object count deleted before clearing: ${delarray.length}`);
 
         // Delete the objects with the property deleted
         serverarray.splice(0, serverarray.length, ...serverarray.filter(el => !el.deleted));

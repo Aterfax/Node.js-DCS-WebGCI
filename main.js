@@ -82,7 +82,19 @@ servers.forEach((dcsserver, index) => {
         console.log('connection start' + ",source " + conn.remoteAddress + ":" + conn.remotePort + ",URL " + conn.url);
         let timer = {"value": 0}; // Start at zero
         let serverupdate;
-        serverupdate = setInterval(() => { servers[index].serverarray = general_functions.GetArray(servers[index].serverarray, servers[index].serverarraydiff, sendglobal, timer, delay, conn, dcsserver.servername) }, delay);
+        serverupdate = setInterval(() => {
+          const a = servers[index].serverarray.length;
+          const b = servers[index].serverarraydiff.length;
+          const diff = b - a;
+          const dead = servers[index].serverarraydiff.filter(el => el.deleted).length;
+          console.log(`Add ${diff} new unit(s): ${a} -> ${b}`);
+
+          servers[index].serverarray = general_functions.GetArray(servers[index].serverarray, servers[index].serverarraydiff, sendglobal, timer, delay, conn, dcsserver.servername);
+          servers[index].serverarraydiff.splice(0, servers[index].serverarraydiff.length, ...servers[index].serverarraydiff.filter(el => !el.deleted));
+
+          const c = servers[index].serverarraydiff.length;
+          console.log(`Remove ${dead} dead unit(s): ${b} -> ${c}`);
+        }, delay);
         conn.on('close', function() {
           console.log('connection close ' + conn.remoteAddress + ":" + conn.remotePort );
         });
