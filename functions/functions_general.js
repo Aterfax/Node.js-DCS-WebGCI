@@ -12,30 +12,31 @@ module.exports = {
         return servername || 'UNSET-SERVER-PLEASE-SET-SERVERNAME';
     },
 
-    GetArray: function (serverarray, serverarraydiff, sendglobal, timer, delay, conn, servername) {
+    GetArray: function (server, sendglobal, timer, delay, conn, servername) {
 
-
-        timer.value=timer.value+1;
+        timer.value++;
         //console.log(timer.value);
 
         // Reset the sendglobal boolean
-        sendglobal=false;     
-        if (timer.value==10){
-            sendglobal=true;
-            timer.value=0;
+        sendglobal = false;     
+        if (timer.value === 10){
+            sendglobal = true;
+            timer.value = 0;
         }
         //console.log(sendglobal);
         //const msg = {};
         // First update the main array
-        serverarraydiff.forEach(obj => array_parsing_functions.PushToArray(serverarray, obj));
-        
+        const serverarray = Object.values(server.serverarray);
+        const serverarraydiff = serverarray.filter(el => el.time > server.time);
 
         // Check for whether we want to send a full update or just the diff.
         if (sendglobal) {
+            console.log(`Server:${servername} Sending full array of ${serverarray.length} unit(s)`);
             message = JSON.stringify(serverarray);
             //console.log("Sending Full array," + servername + " array length is:");
             //console.log(serverarray.length);
         } else {
+            console.log(`Server:${servername} Sending partial array of ${serverarraydiff.length} unit(s)`);
             message = JSON.stringify(serverarraydiff);
             //console.log("Sending Diff array");
 
@@ -50,12 +51,21 @@ module.exports = {
 
         //serverarraydiff = [];
 
-        delarray = serverarray.filter(el => el.deleted);
-        console.log(`Server:${servername} Object count deleted before clearing: ${delarray.length}`);
+        let deleteCount = 0;
+        for (const [k, v] of Object.entries(server.serverarray)) {
+            if (v.deleted) {
+                delete server.serverarray[k];
+                deleteCount++;
+            }
+        }
+
+        if (deleteCount > 0) {
+            console.log(`Server:${servername} Removing ${deleteCount} dead unit(s) from array`);
+        }
+
+        server.time = server.timediff
 
         // Delete the objects with the property deleted
-        serverarray.splice(0, serverarray.length, ...serverarray.filter(el => !el.deleted));
-        return serverarray;
     },
     ConvertAltitude: function (altitudeM) {
         let altitudeF = altitudeM * 3.2808;
