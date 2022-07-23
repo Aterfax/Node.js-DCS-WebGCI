@@ -1,32 +1,35 @@
 [
-{
-    "id": 0,
-    "url": "pgaw.hoggitworld.com",
-    "port": 42674,
-    "servername": "pgaw",
-    "serverarray": [],
-    "serverarraydiff": [],
-    "reflat": 0,
-    "reflong": 0
-},
-{
-    "id": 1,
-    "url": "gaw.hoggitworld.com",
-    "port": 42674,
-    "servername": "gaw",
-    "serverarray": [],
-    "serverarraydiff": [],
-    "reflat": 0,
-    "reflong": 0
-},
-{
-    "id": 2,
-    "url": "saw.hoggitworld.com",
-    "port": 42674,
-    "servername": "saw",
-    "serverarray": [],
-    "serverarraydiff": [],
-    "reflat": 0,
-    "reflong": 0
-}
-]
+    {
+        "id": 0,
+        "url": "pgaw.hoggitworld.com",
+        "port": 42674,
+        "servername": "pgaw",
+        "serverarray": {},
+        "reflat": 0,
+        "reflong": 0,
+        "time": 0,
+        "timediff": 0
+    },
+    {
+        "id": 1,
+        "url": "gaw.hoggitworld.com",
+        "port": 42674,
+        "servername": "gaw",
+        "serverarray": {},
+        "reflat": 0,
+        "reflong": 0,
+        "time": 0,
+        "timediff": 0
+    },
+    {
+        "id": 2,
+        "url": "saw.hoggitworld.com",
+        "port": 42674,
+        "servername": "saw",
+        "serverarray": {},
+        "reflat": 0,
+        "reflong": 0,
+        "time": 0,
+        "timediff": 0
+    }
+    ]

@@ -42,7 +42,7 @@ servers.forEach((dcsserver, index) => {
   // ++++++++++++++++++++++++++++++ BUFFER PARSING START ++++++++++++++++++++++++++++++
   const { Transform } = require('stream');
   const newLine = new Transform();
-
+  
   newLine._transform = function (chunk, encoding, callback) {
     let data = chunk.toString();
     if (this.lastLine) {
@@ -53,7 +53,7 @@ servers.forEach((dcsserver, index) => {
     lines.forEach(this.push.bind(this));
     callback();
   };
-
+  
   newLine._flush = function (callback) {
     if (this.lastLine) {
       this.push(this.lastLine);
@@ -79,24 +79,15 @@ servers.forEach((dcsserver, index) => {
     // Start the WebGCI sockets
     var sockjs_echo = sockjs.createServer();
     sockjs_echo.on('connection', function(conn) {
-        console.log('connection start' + ",source " + conn.remoteAddress + ":" + conn.remotePort + ",URL " + conn.url);
+        console.log(`Connection Start, Source -> ${conn.remoteAddress}:${conn.remotePort}, URL -> ${conn.url}`);
         let timer = {"value": 0}; // Start at zero
         let serverupdate;
         serverupdate = setInterval(() => {
-          const a = servers[index].serverarray.length;
-          const b = servers[index].serverarraydiff.length;
-          const diff = b - a;
-          const dead = servers[index].serverarraydiff.filter(el => el.deleted).length;
-          console.log(`Add ${diff} new unit(s): ${a} -> ${b}`);
-
-          servers[index].serverarray = general_functions.GetArray(servers[index].serverarray, servers[index].serverarraydiff, sendglobal, timer, delay, conn, dcsserver.servername);
-          servers[index].serverarraydiff.splice(0, servers[index].serverarraydiff.length, ...servers[index].serverarraydiff.filter(el => !el.deleted));
-
-          const c = servers[index].serverarraydiff.length;
-          console.log(`Remove ${dead} dead unit(s): ${b} -> ${c}`);
+          general_functions.GetArray(servers[index], sendglobal, timer, delay, conn, dcsserver.servername);
         }, delay);
         conn.on('close', function() {
-          console.log('connection close ' + conn.remoteAddress + ":" + conn.remotePort );
+          console.log(`Connection Close, Source -> ${conn.remoteAddress}:${conn.remotePort}`);
+          clearInterval(serverupdate);
         });
     });
 
@@ -121,9 +112,15 @@ servers.forEach((dcsserver, index) => {
     //         return console.log(err);
     //     }
     // }); 
+
+    // Store latest timestamp for a given server.
+    if (/^#.*/.test(values)) {
+      servers[index].timediff = parseInt(values.split('#')[1]);
+      return;
+    }
     
-    // Strip out #TIMESTAMPS FILE indicators and anything starting with capitals or backslashes.
-    if (/^#.*/.test(values) || /^[A-Z\\]/.test(values) ) {
+    // Strip out anything starting with capitals or backslashes.
+    if (/^[A-Z\\]|[\\]$/.test(values)) {
       return;
     }
 
@@ -142,6 +139,7 @@ servers.forEach((dcsserver, index) => {
       }
       return;
     }
+
     // Trim off the crlf first then split into parts
     values = values.trim().split(',');
 
@@ -152,6 +150,7 @@ servers.forEach((dcsserver, index) => {
     } else {
       item.name = general_functions.GetServerName(dcsserver.servername) + "-" + values[0];
     }
+
     // Convert transform to actual discrete vars.
     if (values[1]) { payload_parsing_functions.ConvertTransform(values[1],dcsserver) }
 
@@ -206,8 +205,13 @@ servers.forEach((dcsserver, index) => {
     }
   
     //console.log(item);
-    array_parsing_functions.PushToArray(servers[index].serverarraydiff, item);
-    
+    item.time = servers[index].timediff;
+    if (servers[index].serverarray[item.name]) {
+      Object.assign(servers[index].serverarray[item.name], item);
+    }
+    else {
+      servers[index].serverarray[item.name] = item;
+    }
   });
 
 });
