@@ -27,7 +27,7 @@ module.exports = {
         //const msg = {};
         // First update the main array
         const serverarray = Object.values(server.serverarray);
-        const serverarraydiff = serverarray.filter(el => el.time > server.time);
+        const serverarraydiff = serverarray.filter(el => el.time >= server.time);
 
         // Check for whether we want to send a full update or just the diff.
         if (sendglobal) {
